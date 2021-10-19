@@ -1,0 +1,17 @@
+{
+	"Ref": 0,
+	"IdCard": "",
+	"Title": 0,
+	"FirstName": "",
+	"LastName": "",
+	"Gender": 0,
+	"Addr1": "",
+	"Addr2": "",
+	"Addr3": "",
+	"ProvinceCode": 0,
+	"ProvinceName": "",
+	"ZipCode": "",
+	"Phone": "",
+	"LineId": "",
+	"Facebook": ""
+}

@@ -1,0 +1,120 @@
+package student
+
+import (
+	//"encoding/json"
+	"database/sql"
+	_ "github.com/go-sql-driver/mysql"
+)
+
+type StudentInfo struct {
+	Ref int
+	Code string
+	IdCard string
+	Title int
+	FirstName string
+	LastName string
+	NickName string
+	Gender int
+	BirthDay string
+	Grade int
+	Room int
+	Phone string
+	LineId string
+	Facebook string
+}
+
+func Get(urldb string) []StudentInfo  {
+	var (
+		ref int
+		code string
+		idcard string
+		title int
+		first_name string
+		last_name string
+		nickname string
+		gender int
+		birthday string
+		grade int
+		room int
+		phone string
+		line string
+		facebook string
+	)
+
+	db, err := sql.Open("mysql", urldb)
+
+	if err != nil {
+		panic(err)
+	}
+
+	defer db.Close()
+
+	rows, err := db.Query(`
+		select 
+			ref, 
+			code, 
+			idcard, 
+			title,
+			first_name, 
+			last_name, 
+			nickname, 
+			gender, 
+			birthday, 
+			grade,
+			room,
+			phone, 
+			line, 
+			facebook 
+		from students
+	`)
+
+	if err != nil {
+		panic(err)
+	}
+
+	defer rows.Close()
+
+	var studentInfos []StudentInfo
+
+	for rows.Next() {
+		err := rows.Scan(
+			&ref,
+			&code,
+			&idcard,
+			&title,
+			&first_name,
+			&last_name,
+			&nickname,
+			&gender,
+			&birthday,
+			&grade,
+			&room,
+			&phone,
+			&line,
+			&facebook,
+		)
+
+		if err != nil {
+			panic(err)
+		}
+
+		studentInfos = append(studentInfos, StudentInfo {
+			Ref: ref,
+			Code: code,
+			IdCard: idcard,
+			Title: title,
+			FirstName: first_name,
+			LastName: last_name,
+			NickName: nickname,
+			Gender: gender,
+			BirthDay: birthday,
+			Grade: grade,
+			Room: room,
+			Phone: phone,
+			LineId: line,
+			Facebook: facebook,
+		})
+	}
+
+	return studentInfos
+}

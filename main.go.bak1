@@ -1,0 +1,139 @@
+package main
+
+import (
+	"fmt"
+	"net/http"
+	"net/http/cgi"
+	"io/ioutil"
+	"encoding/json"
+	"database/sql"
+	_ "github.com/go-sql-driver/mysql"
+	"strings"
+	"schoolcore/student"
+	"schoolcore/checkinout"
+	//"log"
+	//"schoolcore/database"
+)
+
+type Message struct {
+	Service	string
+	Action	int		// 1=add, 2=edit, 3=delete
+	Data	string
+}
+
+type Picture struct {
+	Camno int
+	Datetime string
+	Idcard string
+	Temperature float32
+	Faceimage string
+}
+
+const htmlheader = "application/json; charset=utf-8"
+//const urldb = "root:35.103232@tcp(localhost:3306)/school"
+const urldb = "admin:35.103232@tcp(localhost:3306)/school"
+
+func enableCors(w *http.ResponseWriter) {
+	(*w).Header().Set("Access-Control-Allow-Origin", "*")
+}
+
+func CGIHandle(res http.ResponseWriter, req *http.Request) {
+	enableCors(&res)
+
+//	if req.Body == nil  {
+//		fmt.Fprintf(res, "Authentication Fail.\n")
+//		return
+//	}
+
+	header := res.Header()
+	header.Set("Content-Type", htmlheader)
+//	body, err := ioutil.ReadAll(req.Body)
+//
+//	if err != nil {
+//		fmt.Fprintf(res, "Authentication Fail.\n")
+//		return
+//	}
+
+	parms_service, _ := req.URL.Query()["service"]
+	parms_action, _ := req.URL.Query()["action"]
+	parms_data, _ := req.URL.Query()["data"]
+
+//	json.Unmarshal([]byte(string(body)), &msg)
+	var msgOut []byte
+
+	switch service := parms_service[0]; service {
+
+		case "cam":
+			body, err := ioutil.ReadAll(req.Body)
+
+			if err != nil {
+				fmt.Fprintf(res, "Authentication Fail.\n")
+				return
+			}
+
+			var msg Message
+
+			json.Unmarshal([]byte(string(body)), &msg)
+			handleCam(msg)
+			//msgOut,_ = json.Marshal(msg)
+
+		case "student":
+			studentInfo := student.Get(urldb)
+			msgOut,_ = json.Marshal(studentInfo)
+
+		case "checkinout":
+			result := checkinout.Get(urldb)
+			msgOut, _ = json.Marshal(result)
+	}
+
+	res.Header().Set("Content-Type", htmlheader)
+	fmt.Fprintf(res, "%s\n", msgOut)
+}
+
+func handleCam(msg Message) {
+
+	var pic Picture
+
+	camno := pic.Camno
+	datetime := strings.ReplaceAll(strings.ReplaceAll(pic.Datetime, "T", " "),"+07:00", "")
+	idcard := pic.Idcard
+	temperature := pic.Temperature
+	faceimg := pic.Faceimage
+
+	facefile := []byte(faceimg)
+	ioutil.WriteFile("imgs/faces.b64", facefile, 644)
+
+	db, err := sql.Open("mysql", urldb)
+
+	if err != nil {
+		panic(err)
+	}
+
+	defer db.Close()
+
+	sttn, err := db.Prepare(`
+		insert into checkinout (
+			camno, 
+			created, 
+			idcard, 
+			temperature )
+		values (?,?,?,?)
+	`)
+
+	if err != nil {
+		panic(err)
+	}
+
+	sttn.Exec(camno, datetime,  idcard, temperature)
+}
+
+func handleStudent(msg Message) {
+}
+
+func main() {
+	err := cgi.Serve(http.HandlerFunc(CGIHandle))
+
+	if err != nil {
+		fmt.Println(err)
+	}
+}
