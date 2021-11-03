@@ -5,7 +5,6 @@ import (
 
 	//"net/http"
 	"database/sql"
-	"fmt"
 
 	_ "github.com/go-sql-driver/mysql"
 )
@@ -264,8 +263,6 @@ func insert(urldb string, teacher Teacher) {
 }
 
 func update(urldb string, teacher Teacher) {
-
-	fmt.Println(teacher)
 
 	db, err := sql.Open("mysql", urldb)
 

@@ -19,6 +19,7 @@ import (
 	"schoolcore/cam"
 	"schoolcore/checkinout"
 	"schoolcore/checkinprofile"
+	"schoolcore/checkinsubject"
 	"schoolcore/cutpoint"
 	"schoolcore/department"
 	"schoolcore/employee"
@@ -31,6 +32,8 @@ import (
 	"schoolcore/room"
 	"schoolcore/sdq"
 	"schoolcore/student"
+	"schoolcore/subject"
+	"schoolcore/subjectgroup"
 	"schoolcore/teacher"
 	"schoolcore/title"
 	"schoolcore/user"
@@ -70,12 +73,119 @@ func CGIHandle(res http.ResponseWriter, req *http.Request) {
 
 	enableCors(&res)
 
+	if req.Method == "OPTIONS" {
+		res.WriteHeader(http.StatusOK)
+		return
+	}
+
 	parms_service, _ := req.URL.Query()["service"]
 	parms_action, _ := req.URL.Query()["action"]
 
 	var msgOut []byte
 
 	switch service := parms_service[0]; service {
+
+	case "checkinsubject":
+
+		switch action := parms_action[0]; action {
+
+		case "get":
+			var created = req.URL.Query()["created"][0]
+			var room_ref = req.URL.Query()["room_ref"][0]
+
+			result := checkinsubject.Get(urldb, created, room_ref)
+			msgOut, _ = json.Marshal(result)
+
+		case "get_by_key":
+			var created = req.URL.Query()["created"][0]
+			var period = req.URL.Query()["period"][0]
+			var room_ref = req.URL.Query()["room_ref"][0]
+
+			result := checkinsubject.GetByKey(urldb, created, period, room_ref)
+			msgOut, _ = json.Marshal(result)
+
+		case "check_duplicate":
+			var created = req.URL.Query()["created"][0]
+			var period = req.URL.Query()["period"][0]
+			var room_ref = req.URL.Query()["room_ref"][0]
+
+			result := checkinsubject.CheckDuplicate(urldb, created, period, room_ref)
+			msgOut, _ = json.Marshal(result)
+
+		case "save":
+			var payload checkinsubject.CheckinSubject
+
+			body, _ := ioutil.ReadAll(req.Body)
+			json.Unmarshal([]byte(string(body)), &payload)
+			result := checkinsubject.Save(urldb, payload)
+
+			msgOut, _ = json.Marshal(result)
+
+		}
+
+	case "subject":
+
+		switch action := parms_action[0]; action {
+
+		case "get":
+			result := subject.Get(urldb)
+			msgOut, _ = json.Marshal(result)
+
+		case "get_by_group":
+			var group_ref = req.URL.Query()["group_ref"][0]
+
+			result := subject.GetByGroup(urldb, group_ref)
+			msgOut, _ = json.Marshal(result)
+
+		case "get_by_grade_group":
+			var grade_ref = req.URL.Query()["grade_ref"][0]
+			var group_ref = req.URL.Query()["group_ref"][0]
+
+			result := subject.GetByGradeGroup(urldb, grade_ref, group_ref)
+			msgOut, _ = json.Marshal(result)
+
+		case "save":
+			var payload subject.Subject
+
+			body, _ := ioutil.ReadAll(req.Body)
+			json.Unmarshal([]byte(string(body)), &payload)
+			result := subject.Save(urldb, payload)
+			msgOut, _ = json.Marshal(result)
+
+		case "del":
+			var payload subject.Subject
+
+			body, _ := ioutil.ReadAll(req.Body)
+			json.Unmarshal([]byte(string(body)), &payload)
+			result := subject.Del(urldb, payload)
+			msgOut, _ = json.Marshal(result)
+		}
+
+	case "subjectgroup":
+
+		switch action := parms_action[0]; action {
+
+		case "get":
+			result := subjectgroup.Get(urldb)
+			msgOut, _ = json.Marshal(result)
+
+		case "save":
+			var payload subjectgroup.SubjectGroup
+
+			body, _ := ioutil.ReadAll(req.Body)
+			json.Unmarshal([]byte(string(body)), &payload)
+			result := subjectgroup.Save(urldb, payload)
+			msgOut, _ = json.Marshal(result)
+
+		case "del":
+			var payload subjectgroup.SubjectGroup
+
+			body, _ := ioutil.ReadAll(req.Body)
+			json.Unmarshal([]byte(string(body)), &payload)
+			result := subjectgroup.Del(urldb, payload)
+			msgOut, _ = json.Marshal(result)
+
+		}
 
 	case "line":
 
@@ -812,7 +922,5 @@ func main() {
 	fmt.Println("Start server port: 8080")
 
 	http.HandleFunc("/schoolcore", CGIHandle)
-	//http.ListenAndServe(":80", nil)
-	//var mux = http.NewServeMux()
 	http.ListenAndServe(":8080", nil)
 }
