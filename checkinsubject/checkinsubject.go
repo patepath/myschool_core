@@ -7,7 +7,7 @@ import (
 type CheckinSubjectStudent struct {
 	StudentRef      int
 	StudentCode     string
-	studentNo       int
+	StudentNo       int
 	StudentFullName string
 	StatusNo        int
 	StatusName      string
@@ -130,6 +130,120 @@ func Get(urldb string, created string, room_ref string) []CheckinStudent {
 	return checkinstudents
 }
 
+func GetNormal(urldb string, created string, room_ref string) CheckinStudent {
+	db, err := sql.Open("mysql", urldb)
+
+	if err != nil {
+		panic(err)
+	}
+
+	defer db.Close()
+
+	sql := `
+		select
+			(select count(*) from checkinsubject_student where created='` + created + `' and period=1 and room_ref=` + room_ref + ` and status=1) as P1,
+			(select count(*) from checkinsubject_student where created='` + created + `' and period=2 and room_ref=` + room_ref + ` and status=1) as P2,
+			(select count(*) from checkinsubject_student where created='` + created + `' and period=3 and room_ref=` + room_ref + ` and status=1) as P3,
+			(select count(*) from checkinsubject_student where created='` + created + `' and period=4 and room_ref=` + room_ref + ` and status=1) as P4,
+			(select count(*) from checkinsubject_student where created='` + created + `' and period=5 and room_ref=` + room_ref + ` and status=1) as P5,
+			(select count(*) from checkinsubject_student where created='` + created + `' and period=6 and room_ref=` + room_ref + ` and status=1) as P6,
+			(select count(*) from checkinsubject_student where created='` + created + `' and period=7 and room_ref=` + room_ref + ` and status=1) as P7,
+			(select count(*) from checkinsubject_student where created='` + created + `' and period=8 and room_ref=` + room_ref + ` and status=1) as P8,
+			(select count(*) from checkinsubject_student where created='` + created + `' and period=9 and room_ref=` + room_ref + ` and status=1) as P9,
+			(select count(*) from checkinsubject_student where created='` + created + `' and period=10 and room_ref=` + room_ref + ` and status=1) as P10
+		from checkinsubject_student
+		where  created='` + created + `' and room_ref=` + room_ref + `
+		group by created, period, room_ref
+		limit 1;
+	`
+
+	rows, err := db.Query(sql)
+
+	if err != nil {
+		panic(err)
+	}
+
+	var checkinstudent CheckinStudent
+
+	if rows.Next() {
+		err = rows.Scan(
+			&checkinstudent.P1,
+			&checkinstudent.P2,
+			&checkinstudent.P3,
+			&checkinstudent.P4,
+			&checkinstudent.P5,
+			&checkinstudent.P6,
+			&checkinstudent.P7,
+			&checkinstudent.P8,
+			&checkinstudent.P9,
+			&checkinstudent.P10,
+		)
+
+		if err != nil {
+			panic(err)
+		}
+	}
+
+	return checkinstudent
+}
+
+func GetAbsent(urldb string, created string, room_ref string) CheckinStudent {
+	db, err := sql.Open("mysql", urldb)
+
+	if err != nil {
+		panic(err)
+	}
+
+	defer db.Close()
+
+	sql := `
+		select
+			(select count(*) from checkinsubject_student where created='` + created + `' and period=1 and room_ref=` + room_ref + ` and status>1) as P1,
+			(select count(*) from checkinsubject_student where created='` + created + `' and period=2 and room_ref=` + room_ref + ` and status>1) as P2,
+			(select count(*) from checkinsubject_student where created='` + created + `' and period=3 and room_ref=` + room_ref + ` and status>1) as P3,
+			(select count(*) from checkinsubject_student where created='` + created + `' and period=4 and room_ref=` + room_ref + ` and status>1) as P4,
+			(select count(*) from checkinsubject_student where created='` + created + `' and period=5 and room_ref=` + room_ref + ` and status>1) as P5,
+			(select count(*) from checkinsubject_student where created='` + created + `' and period=6 and room_ref=` + room_ref + ` and status>1) as P6,
+			(select count(*) from checkinsubject_student where created='` + created + `' and period=7 and room_ref=` + room_ref + ` and status>1) as P7,
+			(select count(*) from checkinsubject_student where created='` + created + `' and period=8 and room_ref=` + room_ref + ` and status>1) as P8,
+			(select count(*) from checkinsubject_student where created='` + created + `' and period=9 and room_ref=` + room_ref + ` and status>1) as P9,
+			(select count(*) from checkinsubject_student where created='` + created + `' and period=10 and room_ref=` + room_ref + ` and status>1) as P10
+		from checkinsubject_student
+		where  created='` + created + `' and room_ref=` + room_ref + `
+		group by created, period, room_ref
+		limit 1;
+	`
+
+	rows, err := db.Query(sql)
+
+	if err != nil {
+		panic(err)
+	}
+
+	var checkinstudent CheckinStudent
+
+	if rows.Next() {
+		err = rows.Scan(
+			&checkinstudent.P1,
+			&checkinstudent.P2,
+			&checkinstudent.P3,
+			&checkinstudent.P4,
+			&checkinstudent.P5,
+			&checkinstudent.P6,
+			&checkinstudent.P7,
+			&checkinstudent.P8,
+			&checkinstudent.P9,
+			&checkinstudent.P10,
+		)
+
+		if err != nil {
+			panic(err)
+		}
+	}
+
+	return checkinstudent
+}
+
 func GetByKey(urldb string, created string, period string, room_ref string) CheckinSubject {
 
 	db, err := sql.Open("mysql", urldb)
@@ -148,8 +262,8 @@ func GetByKey(urldb string, created string, period string, room_ref string) Chec
 			A.room_ref,
 			A.teacher_ref as teacher_ref,
 			concat(B.firstname, ' ', B.lastname) as teacher_fullname,
-			D.group_ref as subjectgroup_ref,
-			A.subject_ref as subject_ref
+			ifnull(D.group_ref, 0) as subjectgroup_ref,
+			ifnull(A.subject_ref, 0) as subject_ref
 		from checkinsubject as A
 		left join teacher as B on A.teacher_ref = B.ref
 		left join classroom as C on A.room_ref = C.ref
@@ -204,8 +318,8 @@ func GetByKey(urldb string, created string, period string, room_ref string) Chec
 		for rows.Next() {
 			err = rows.Scan(
 				&checkinstudent.StudentRef,
+				&checkinstudent.StudentNo,
 				&checkinstudent.StudentCode,
-				&checkinstudent.studentNo,
 				&checkinstudent.StudentFullName,
 				&checkinstudent.StatusNo,
 			)
@@ -294,6 +408,7 @@ func CheckDuplicate(urldb string, created string, period string, room_ref string
 }
 
 func Save(urldb string, checkinsubject CheckinSubject) Result {
+
 	db, err := sql.Open("mysql", urldb)
 
 	if err != nil {
@@ -377,6 +492,195 @@ func Save(urldb string, checkinsubject CheckinSubject) Result {
 	} else {
 		result.Success = false
 	}
+
+	return result
+}
+
+func Change(urldb string, created string, period string, room_ref string, checkinsubject CheckinSubject) Result {
+
+	db, err := sql.Open("mysql", urldb)
+
+	if err != nil {
+		panic(err)
+	}
+
+	defer db.Close()
+
+	sql := `
+		delete from checkinsubject_student
+		where created='` + created + `' and period=` + period + ` and room_ref=` + room_ref + `;
+	`
+
+	_, err = db.Exec(sql)
+
+	if err != nil {
+		panic(err)
+	}
+
+	sql = `
+		delete from checkinsubject
+		where created='` + created + `' and period=` + period + ` and room_ref=` + room_ref + `;
+	`
+
+	_, err = db.Exec(sql)
+
+	if err != nil {
+		panic(err)
+	}
+
+	sql = `
+		insert into checkinsubject(created, period, room_ref, teacher_ref, subject_ref) 
+		values(?,?,?,?,?);
+	`
+
+	sttn, err := db.Prepare(sql)
+
+	if err != nil {
+		panic(err)
+	}
+
+	defer sttn.Close()
+
+	_, err = sttn.Exec(
+		checkinsubject.Created,
+		checkinsubject.Period,
+		checkinsubject.RoomRef,
+		checkinsubject.TeacherRef,
+		checkinsubject.SubjectRef,
+	)
+
+	if err != nil {
+		panic(err)
+	}
+
+	for _, s := range checkinsubject.Students {
+		sql = `
+		insert into checkinsubject_student(created, period, room_ref, student_ref, student_code, status) 
+		values(?,?,?,?,?,?);`
+
+		sttn, err = db.Prepare(sql)
+
+		if err != nil {
+			panic(err)
+		}
+
+		_, err = sttn.Exec(
+			checkinsubject.Created,
+			checkinsubject.Period,
+			checkinsubject.RoomRef,
+			s.StudentRef,
+			s.StudentCode,
+			s.StatusNo,
+		)
+
+		if err != nil {
+			panic(err)
+		}
+	}
+
+	var result Result
+	result.Success = true
+
+	return result
+}
+
+func Update(urldb string, checkinsubject CheckinSubject) Result {
+	db, err := sql.Open("mysql", urldb)
+
+	if err != nil {
+		panic(err)
+	}
+
+	defer db.Close()
+
+	sql := `
+		update checkinsubject set subject_ref=? 
+		where created=? and period=? and room_ref=?;
+	`
+
+	sttn, err := db.Prepare(sql)
+
+	if err != nil {
+		panic(err)
+	}
+
+	defer sttn.Close()
+
+	_, err = sttn.Exec(
+		checkinsubject.SubjectRef,
+		checkinsubject.Created,
+		checkinsubject.Period,
+		checkinsubject.RoomRef,
+	)
+
+	if err != nil {
+		panic(err)
+	}
+
+	for _, s := range checkinsubject.Students {
+
+		sql = `
+		update checkinsubject_student set status=? 
+		where created=? and period=? and room_ref=? and student_ref=?;`
+
+		sttn, err = db.Prepare(sql)
+
+		if err != nil {
+			panic(err)
+		}
+
+		_, err = sttn.Exec(
+			s.StatusNo,
+			checkinsubject.Created,
+			checkinsubject.Period,
+			checkinsubject.RoomRef,
+			s.StudentRef,
+		)
+
+		if err != nil {
+			panic(err)
+		}
+	}
+
+	var result Result
+	result.Success = true
+
+	return result
+}
+
+func Delete(urldb string, created string, period string, room_ref string) Result {
+	db, err := sql.Open("mysql", urldb)
+
+	if err != nil {
+		panic(err)
+	}
+
+	defer db.Close()
+
+	sql := `
+		delete from checkinsubject_student
+		where created='` + created + `' and period=` + period + ` and room_ref=` + room_ref + `;
+	`
+
+	_, err = db.Exec(sql)
+
+	if err != nil {
+		panic(err)
+	}
+
+	sql = `
+		delete from checkinsubject
+		where created='` + created + `' and period=` + period + ` and room_ref=` + room_ref + `;
+	`
+
+	_, err = db.Exec(sql)
+
+	if err != nil {
+		panic(err)
+	}
+
+	var result Result
+	result.Success = true
 
 	return result
 }

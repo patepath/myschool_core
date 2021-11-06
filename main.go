@@ -104,6 +104,20 @@ func CGIHandle(res http.ResponseWriter, req *http.Request) {
 			result := checkinsubject.GetByKey(urldb, created, period, room_ref)
 			msgOut, _ = json.Marshal(result)
 
+		case "get_status_normal":
+			var created = req.URL.Query()["created"][0]
+			var room_ref = req.URL.Query()["room_ref"][0]
+
+			result := checkinsubject.GetNormal(urldb, created, room_ref)
+			msgOut, _ = json.Marshal(result)
+
+		case "get_status_absent":
+			var created = req.URL.Query()["created"][0]
+			var room_ref = req.URL.Query()["room_ref"][0]
+
+			result := checkinsubject.GetAbsent(urldb, created, room_ref)
+			msgOut, _ = json.Marshal(result)
+
 		case "check_duplicate":
 			var created = req.URL.Query()["created"][0]
 			var period = req.URL.Query()["period"][0]
@@ -121,6 +135,34 @@ func CGIHandle(res http.ResponseWriter, req *http.Request) {
 
 			msgOut, _ = json.Marshal(result)
 
+		case "change":
+			var created = req.URL.Query()["created"][0]
+			var period = req.URL.Query()["period"][0]
+			var room_ref = req.URL.Query()["room_ref"][0]
+			var payload checkinsubject.CheckinSubject
+
+			body, _ := ioutil.ReadAll(req.Body)
+			json.Unmarshal([]byte(string(body)), &payload)
+			result := checkinsubject.Change(urldb, created, period, room_ref, payload)
+
+			msgOut, _ = json.Marshal(result)
+
+		case "update":
+			var payload checkinsubject.CheckinSubject
+
+			body, _ := ioutil.ReadAll(req.Body)
+			json.Unmarshal([]byte(string(body)), &payload)
+			result := checkinsubject.Update(urldb, payload)
+
+			msgOut, _ = json.Marshal(result)
+
+		case "delete":
+			var created = req.URL.Query()["created"][0]
+			var period = req.URL.Query()["period"][0]
+			var room_ref = req.URL.Query()["room_ref"][0]
+
+			result := checkinsubject.Delete(urldb, created, period, room_ref)
+			msgOut, _ = json.Marshal(result)
 		}
 
 	case "subject":
