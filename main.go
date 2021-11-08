@@ -34,6 +34,7 @@ import (
 	"schoolcore/student"
 	"schoolcore/subject"
 	"schoolcore/subjectgroup"
+	"schoolcore/subjectstudent"
 	"schoolcore/teacher"
 	"schoolcore/title"
 	"schoolcore/user"
@@ -84,6 +85,75 @@ func CGIHandle(res http.ResponseWriter, req *http.Request) {
 	var msgOut []byte
 
 	switch service := parms_service[0]; service {
+
+	case "subjectstudent":
+
+		switch action := parms_action[0]; action {
+
+		case "get":
+			var yearedu = req.URL.Query()["yearedu"][0]
+			var grade_ref = req.URL.Query()["grade_ref"][0]
+			var subject_ref = req.URL.Query()["subject_ref"][0]
+
+			result := subjectstudent.Get(urldb, yearedu, grade_ref, subject_ref)
+			msgOut, _ = json.Marshal(result)
+
+		case "get_by_room":
+			var yearedu = req.URL.Query()["yearedu"][0]
+			var room_ref = req.URL.Query()["room_ref"][0]
+			var subject_ref = req.URL.Query()["subject_ref"][0]
+
+			result := subjectstudent.GetByRoom(urldb, yearedu, room_ref, subject_ref)
+			msgOut, _ = json.Marshal(result)
+
+		case "insert_all_grade":
+			var yearedu = req.URL.Query()["yearedu"][0]
+			var grade_ref = req.URL.Query()["grade_ref"][0]
+			var subject_ref = req.URL.Query()["subject_ref"][0]
+
+			result := subjectstudent.InsertAllGrade(urldb, yearedu, grade_ref, subject_ref)
+			msgOut, _ = json.Marshal(result)
+
+		case "insert_by_room":
+			var yearedu = req.URL.Query()["yearedu"][0]
+			var room_ref = req.URL.Query()["room_ref"][0]
+			var subject_ref = req.URL.Query()["subject_ref"][0]
+
+			result := subjectstudent.InsertByRoom(urldb, yearedu, room_ref, subject_ref)
+			msgOut, _ = json.Marshal(result)
+
+		case "insert_by_code":
+			var yearedu = req.URL.Query()["yearedu"][0]
+			var student_code = req.URL.Query()["student_code"][0]
+			var subject_ref = req.URL.Query()["subject_ref"][0]
+
+			result := subjectstudent.InsertByCode(urldb, yearedu, subject_ref, student_code)
+			msgOut, _ = json.Marshal(result)
+
+		case "delete_all_grade":
+			var yearedu = req.URL.Query()["yearedu"][0]
+			var grade_ref = req.URL.Query()["grade_ref"][0]
+			var subject_ref = req.URL.Query()["subject_ref"][0]
+
+			result := subjectstudent.DeleteAllGrade(urldb, yearedu, grade_ref, subject_ref)
+			msgOut, _ = json.Marshal(result)
+
+		case "delete_by_room":
+			var yearedu = req.URL.Query()["yearedu"][0]
+			var room_ref = req.URL.Query()["room_ref"][0]
+			var subject_ref = req.URL.Query()["subject_ref"][0]
+
+			result := subjectstudent.DeleteByRoom(urldb, yearedu, room_ref, subject_ref)
+			msgOut, _ = json.Marshal(result)
+
+		case "delete_by_code":
+			var yearedu = req.URL.Query()["yearedu"][0]
+			var student_code = req.URL.Query()["student_code"][0]
+			var subject_ref = req.URL.Query()["subject_ref"][0]
+
+			result := subjectstudent.DeleteByCode(urldb, yearedu, student_code, subject_ref)
+			msgOut, _ = json.Marshal(result)
+		}
 
 	case "checkinsubject":
 
