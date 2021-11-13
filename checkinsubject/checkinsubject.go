@@ -27,6 +27,7 @@ type CheckinSubject struct {
 	SubjectRef       int
 	SubjectName      string
 	Students         []CheckinSubjectStudent
+	Note             string
 }
 
 type CheckinStudent struct {
@@ -258,14 +259,15 @@ func GetByKey(urldb string, created string, period string, room_ref string) Chec
 		select
 			A.created,
 			A.period,
-			C.ref as grade_ref,
+			C.grade_ref as grade_ref,
 			A.room_ref,
 			A.teacher_ref as teacher_ref,
-			concat(B.firstname, ' ', B.lastname) as teacher_fullname,
+			ifnull(B.full_name,'') as teacher_fullname,
 			ifnull(D.group_ref, 0) as subjectgroup_ref,
-			ifnull(A.subject_ref, 0) as subject_ref
+			ifnull(A.subject_ref, 0) as subject_ref,
+			ifnull(A.note, '') as note
 		from checkinsubject as A
-		left join teacher as B on A.teacher_ref = B.ref
+		left join user as B on A.teacher_ref = B.ref
 		left join classroom as C on A.room_ref = C.ref
 		left join subject as D on A.subject_ref = D.ref
 		where created='` + created + `' and period=` + period + ` and A.room_ref=` + room_ref + `
@@ -290,6 +292,7 @@ func GetByKey(urldb string, created string, period string, room_ref string) Chec
 			&checkinsubject.TeacherFullName,
 			&checkinsubject.SubjectGroupRef,
 			&checkinsubject.SubjectRef,
+			&checkinsubject.Note,
 		)
 
 		if err != nil {
@@ -438,8 +441,8 @@ func Save(urldb string, checkinsubject CheckinSubject) Result {
 		}
 
 		sql := `
-			insert into checkinsubject(created, period, room_ref, teacher_ref, subject_ref) 
-			values(?,?,?,?,?);
+			insert into checkinsubject(created, period, room_ref, teacher_ref, subject_ref, note) 
+			values(?,?,?,?,?,?);
 		`
 
 		sttn, err := db.Prepare(sql)
@@ -456,6 +459,7 @@ func Save(urldb string, checkinsubject CheckinSubject) Result {
 			checkinsubject.RoomRef,
 			checkinsubject.TeacherRef,
 			checkinsubject.SubjectRef,
+			checkinsubject.Note,
 		)
 
 		if err != nil {
@@ -529,8 +533,8 @@ func Change(urldb string, created string, period string, room_ref string, checki
 	}
 
 	sql = `
-		insert into checkinsubject(created, period, room_ref, teacher_ref, subject_ref) 
-		values(?,?,?,?,?);
+		insert into checkinsubject(created, period, room_ref, teacher_ref, subject_ref, note) 
+		values(?,?,?,?,?,?);
 	`
 
 	sttn, err := db.Prepare(sql)
@@ -547,6 +551,7 @@ func Change(urldb string, created string, period string, room_ref string, checki
 		checkinsubject.RoomRef,
 		checkinsubject.TeacherRef,
 		checkinsubject.SubjectRef,
+		checkinsubject.Note,
 	)
 
 	if err != nil {
@@ -594,7 +599,7 @@ func Update(urldb string, checkinsubject CheckinSubject) Result {
 	defer db.Close()
 
 	sql := `
-		update checkinsubject set subject_ref=? 
+		update checkinsubject set subject_ref=?, note=? 
 		where created=? and period=? and room_ref=?;
 	`
 
@@ -608,6 +613,7 @@ func Update(urldb string, checkinsubject CheckinSubject) Result {
 
 	_, err = sttn.Exec(
 		checkinsubject.SubjectRef,
+		checkinsubject.Note,
 		checkinsubject.Created,
 		checkinsubject.Period,
 		checkinsubject.RoomRef,

@@ -14,6 +14,7 @@ type Payload struct {
 type User struct {
 	Ref      int
 	IdCard   string
+	Code     string
 	Name     string
 	Password string
 	Fullname string
@@ -31,7 +32,12 @@ func Login(urldb string, payload Payload) User {
 	defer db.Close()
 
 	sql := `
-		select name, full_name, role
+		select 
+			ref, 
+			name, 
+			ifnull(code, '') as code, 
+			full_name, 
+			role
 		from user
 		where md5(name)=? and password=?
 		limit 1;
@@ -58,7 +64,9 @@ func Login(urldb string, payload Payload) User {
 	if rows.Next() {
 
 		err := rows.Scan(
+			&user.Ref,
 			&user.Name,
+			&user.Code,
 			&user.Fullname,
 			&user.Role,
 		)

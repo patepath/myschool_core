@@ -152,6 +152,69 @@ func GetByRef(urldb string, ref string) Teacher {
 	return teacher
 }
 
+func GetByCode(urldb string, code string) Teacher {
+
+	db, err := sql.Open("mysql", urldb)
+
+	if err != nil {
+		panic(err)
+	}
+
+	defer db.Close()
+
+	sql := `
+		select 
+			A.ref, 
+			ifnull(D.ref, 0), 
+			ifnull(D.name, ''), 
+			ifnull(B.ref, 0), 
+			ifnull(B.name, ''), 
+			ifnull(C.ref, 0), 
+			ifnull(C.name, ''), 
+			A.code, 
+			firstname, 
+			lastname, 
+			phone
+		from teacher as A
+		left join classroom as B on A.room_ref = B.ref
+		left join grade as C on C.ref = B.grade_ref
+		left join department as D on A.dept_ref = D.ref
+		where A.code='` + code + `';`
+
+	rows, err := db.Query(sql)
+
+	if err != nil {
+		panic(err)
+	}
+
+	defer rows.Close()
+
+	var teacher Teacher
+
+	if rows.Next() {
+
+		err := rows.Scan(
+			&teacher.Ref,
+			&teacher.DeptRef,
+			&teacher.DeptName,
+			&teacher.RoomRef,
+			&teacher.RoomName,
+			&teacher.GradeRef,
+			&teacher.GradeName,
+			&teacher.Code,
+			&teacher.FirstName,
+			&teacher.LastName,
+			&teacher.Phone,
+		)
+
+		if err != nil {
+			panic(err)
+		}
+	}
+
+	return teacher
+}
+
 func GetByGrade(urldb string, grade string) []Teacher {
 
 	db, err := sql.Open("mysql", urldb)

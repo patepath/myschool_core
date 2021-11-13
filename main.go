@@ -419,6 +419,12 @@ func CGIHandle(res http.ResponseWriter, req *http.Request) {
 				msgOut, _ = json.Marshal(result)
 			}
 
+		case "get_by_code":
+			var code = req.URL.Query()["code"][0]
+
+			result := teacher.GetByCode(urldb, code)
+			msgOut, _ = json.Marshal(result)
+
 		case "get_by_grade":
 			var grade = req.URL.Query()["grade"][0]
 

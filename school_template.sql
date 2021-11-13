@@ -126,6 +126,7 @@ CREATE TABLE `checkinsubject` (
   `room_ref` int(11) NOT NULL,
   `teacher_ref` int(11) DEFAULT NULL,
   `subject_ref` int(11) DEFAULT NULL,
+  `note` text DEFAULT NULL,
   PRIMARY KEY (`created`,`period`,`room_ref`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -163,7 +164,7 @@ CREATE TABLE `classroom` (
   `floor` int(11) DEFAULT NULL,
   `teacher_ref` int(11) DEFAULT NULL,
   PRIMARY KEY (`ref`)
-) ENGINE=InnoDB AUTO_INCREMENT=121 DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB AUTO_INCREMENT=122 DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -307,7 +308,7 @@ CREATE TABLE `parents` (
   `title` int(11) DEFAULT NULL,
   `lineuid` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`ref`)
-) ENGINE=InnoDB AUTO_INCREMENT=111 DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB AUTO_INCREMENT=399 DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -532,7 +533,7 @@ CREATE TABLE `students` (
   `rfid` varchar(25) DEFAULT NULL,
   `no` varchar(10) DEFAULT NULL,
   PRIMARY KEY (`ref`)
-) ENGINE=InnoDB AUTO_INCREMENT=3024 DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB AUTO_INCREMENT=3087 DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -564,7 +565,7 @@ CREATE TABLE `subject` (
   `grade_ref` int(11) DEFAULT NULL,
   `teacher_ref` int(11) DEFAULT NULL,
   PRIMARY KEY (`ref`)
-) ENGINE=InnoDB AUTO_INCREMENT=224 DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB AUTO_INCREMENT=249 DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -579,6 +580,27 @@ CREATE TABLE `subject_group` (
   `name` varchar(50) DEFAULT NULL,
   PRIMARY KEY (`ref`)
 ) ENGINE=InnoDB AUTO_INCREMENT=32 DEFAULT CHARSET=utf8mb4;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `subjectresult_student`
+--
+
+DROP TABLE IF EXISTS `subjectresult_student`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `subjectresult_student` (
+  `yearedu` int(11) NOT NULL,
+  `semester` int(11) NOT NULL,
+  `grade_ref` int(11) DEFAULT NULL,
+  `room_ref` int(11) NOT NULL,
+  `student_ref` int(11) NOT NULL,
+  `subject_ref` int(11) NOT NULL,
+  `point` int(11) DEFAULT 0,
+  `gpa` int(11) DEFAULT 0,
+  `can_exam` tinyint(1) DEFAULT 1,
+  PRIMARY KEY (`yearedu`,`semester`,`room_ref`,`student_ref`,`subject_ref`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -597,7 +619,7 @@ CREATE TABLE `teacher` (
   `lastname` varchar(255) DEFAULT NULL,
   `phone` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`ref`)
-) ENGINE=InnoDB AUTO_INCREMENT=229 DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB AUTO_INCREMENT=410 DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -647,7 +669,7 @@ CREATE TABLE `user` (
   `password` varchar(255) DEFAULT NULL,
   `role` varchar(15) DEFAULT NULL,
   PRIMARY KEY (`ref`)
-) ENGINE=InnoDB AUTO_INCREMENT=1862 DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB AUTO_INCREMENT=8343 DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
@@ -659,4 +681,4 @@ CREATE TABLE `user` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2021-10-31  9:36:10
+-- Dump completed on 2021-11-11 19:43:47
